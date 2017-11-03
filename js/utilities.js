@@ -60,8 +60,30 @@ function simplePreload(imageArray){
 function pointInsideCircle(x, y, I){
     var dx = x - I.x;
     var dy = y - I.y;
-    return dx * dx + dy * dy <= I.radius * I.radius
+    return dx * dx + dy * dy <= I.radius * I.radius;
     
+}
+
+function dotProduct(x1,y1,x2,y2){
+    return (x1*y1) + (x2*y2);
+}
+
+function magnitude(x,y){
+    var mag = Math.sqrt(Math.pow(x,2) + Math.pow(y,2));
+    return mag;
+}
+
+function angleBetweenTwoPoints(x1,y1,x2,y2){
+    var angle = {
+        x: 0.0,
+        y: 0.0,
+    };
+    
+    angle.x = dotProduct(x1,y1,x2,y2) / (magnitude(x1,y1) * magnitude(x2,y2));
+    angle.y = Math.sqrt(1 - Math.pow(angle.x,2));
+    console.dir(angle);
+    
+    return angle;
 }
 
 function circlesIntersect(c1,c2){
@@ -89,7 +111,7 @@ function loadImagesWithCallback(sources, callback) {
 	  
 	  imageObjects[i].src = sources[i];
 	}
-  }
+}
 
 
 /*
