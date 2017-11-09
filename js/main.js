@@ -28,6 +28,16 @@ app.main = {
         velocityY:0,
         rotationX: 1, // -1 = left, 1 = right
         rotationY: 1, // -1 = down, 1 = up
+        moving: false,
+        isBall: true,
+        isColliding: true,
+    },
+    
+    block: {
+        x: 0,
+        y: 0,
+        w: 50,
+        h: 100,
     },
     
     //MARK - Initializers
@@ -41,6 +51,10 @@ app.main = {
         this.canvas.onmousedown  = this.doMouseDown.bind(this);
         this.canvas.onmouseup = this.doMouseUp.bind(this);
         this.canvas.onmousemove = this.doMouseMove.bind(this);
+        
+        this.block.x = this.canvas.width - 300;
+        this.block.y = this.canvas.height/2 - this.block.h/2;
+        
         
         this.ball.x = this.canvas.width/2;
         this.ball.y = this.canvas.height/2;
@@ -57,20 +71,31 @@ app.main = {
         
         //Update Loop
         //this.moveBall();
+        if(this.ball.moving){
+            this.moveBall(); 
+        }
         
         // Draw Loop
         this.ctx.fillStyle = "black";
         this.ctx.fillRect(0,0,this.WIDTH,this.HEIGHT);
         
+        this.ctx.save();
+        this.ctx.fillStyle = makeColor(0,255,0,1);
+        this.ctx.fillRect(this.block.x,this.block.y, this.block.w, this.block.h);
+        this.ctx.restore();
         this.drawBall(this.ctx);
     },
     
     // MARK - Listener Events
     doMouseDown: function(e){
         //Mouse Functions
+        this.ball.moving = true;
         var mouse = getMouse(e);
-        console.dir(mouse);
-        console.log(angleBetweenTwoPoints(mouse.x, mouse.y, this.ball.x, this.ball.y));
+        //console.dir(mouse);
+        //console.log(angleBetweenTwoPoints());
+        this.ball.rotationX = angleBetweenTwoPoints(mouse.x, mouse.y, this.ball.x, this.ball.y).x * -1;
+        this.ball.rotationY = angleBetweenTwoPoints(mouse.x, mouse.y, this.ball.x, this.ball.y).y * -1;        
+        //console.log(this.ball.rotationX +', ' + this.ball.rotationY);
     },
     
     doMouseUp: function(e){
@@ -100,11 +125,14 @@ app.main = {
             this.ball.rotationY *= -1;
         }
         
+        this.C2RCollides(this.ball, this.block)
+        
         this.ball.velocityX = this.ball.speed * this.ball.rotationX;
         this.ball.velocityY = this.ball.speed * this.ball.rotationY;
         
         this.ball.x += this.ball.velocityX;
         this.ball.y += this.ball.velocityY;
+        
         
     },
     
@@ -118,7 +146,26 @@ app.main = {
         ctx.restore();
     },
     
-    checkCollision: function(obj1, obj2){
+    C2RCollides: function(circle, rect){
         //Check Collision between two objects or bounds  
+        var distX = Math.abs(circle.x + circle.velocityX - rect.x-rect.w/2);
+        var distY = Math.abs(circle.y + circle.velocityY - rect.y-rect.h/2);
+        var dist = Math.sqrt(distX - rect.w/2) - Math.sqrt(distY - rect.h/2);
+        
+        if (distX >(rect.w/2 + circle.r)){return false;}
+        if(distY > (rect.h/2 + circle.r)){return false;}  
+        if(distX <= (rect.w/2)){
+            this.ball.rotationX *= -1;
+            this.ball.x += this.ball.speed * this.ball.rotationX;
+            //return true;
+        }
+        if(distY <= (rect.h/2)){
+            this.ball.rotationY *= -1;
+            this.ball.y += this.ball.speed * this.ball.rotationY;
+            //return true;
+        }
+
+        return ((distX * distX) + (distY * distY) <= (circle.r * circle.r));
     },
+    
 }; // END app.main
