@@ -65,7 +65,7 @@ function pointInsideCircle(x, y, I){
 }
 
 function dotProduct(x1,y1,x2,y2){
-    return (x1*y1) + (x2*y2);
+    return ((x1*x2) + (y1*y2));
 }
 
 function magnitude(x,y){
@@ -78,10 +78,15 @@ function angleBetweenTwoPoints(x1,y1,x2,y2){
         x: 0.0,
         y: 0.0,
     };
+
+    var z = Math.atan2(y1-y2,x1-x2);
+    //console.log(z);
     
-    angle.x = dotProduct(x1,y1,x2,y2) / (magnitude(x1,y1) * magnitude(x2,y2));
-    angle.y = Math.sqrt(1 - Math.pow(angle.x,2));
-    console.dir(angle);
+    angle.x = Math.cos(z);
+    angle.y = Math.sin(z);
+    //console.log(angle.x);
+    
+    //console.log(Math.cos());
     
     return angle;
 }
