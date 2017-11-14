@@ -31,32 +31,13 @@ app.main = {
         PLAYER: 0,
         BLOCK: 1,
         GOAL: 2,
+        HORMOVING: 3,
+        VERMOVING: 4,
     }),
     
     curGameState: null,
     curMenuState: null,
-    
-    ball: {
-        x: 0,
-        y: 0,
-        r: 0,
-        speed: 5,
-        velocityX:0,
-        velocityY:0,
-        rotationX: 1, // -1 = left, 1 = right
-        rotationY: 1, // -1 = down, 1 = up
-        moving: false,
-        type: null,
-        isColliding: true,
-    },
-    
-    goal: {
-        x: 0,
-        y: 0,
-        w: 25,
-        h: 25,
-        type: null,
-    },
+    ball: {},
     
     //MARK - Initializers
     
@@ -70,17 +51,7 @@ app.main = {
         this.canvas.onmouseup = this.doMouseUp.bind(this);
         this.canvas.onmousemove = this.doMouseMove.bind(this);
         
-        this.objects.push(this.makeBlock(this.canvas.width -300, this.canvas.height/2 - 100, 50, 100, this.OBJ_TYPE.BLOCK));
-        
-        this.goal.x = 25;
-        this.goal.y = 25;
-        this.goal.type = this.OBJ_TYPE.GOAL;
-        
-        
-        this.ball.x = this.canvas.width/2;
-        this.ball.y = this.canvas.height/2;
-        this.ball.r = 10;
-        this.ball.type = this.OBJ_TYPE.PLAYER;
+        this.loadLevel1();
         
         this.curGameState = this.GAME_STATE.DEFAULT;
         this.curMenuState = this.MENU_STATE.MAIN;
@@ -95,8 +66,14 @@ app.main = {
         
         //Update Loop
         //this.moveBall();
+        
+        if((this.curGameState == this.GAME_STATE.DEFAULT || this.curGameState == this.GAME_STATE.MOVING) && this.curMenuState == this.MENU_STATE.PLAYING){
+            this.moveObj();
+        }
+        
         if(this.curGameState == this.GAME_STATE.MOVING && this.curMenuState == this.MENU_STATE.PLAYING){
             this.moveBall(); 
+            
         }
         
         
@@ -124,13 +101,19 @@ app.main = {
     
     drawGame: function(){
         this.ctx.save();
-        this.ctx.fillStyle = makeColor(0,255,0,1);  
-        for(var i = 0; i < this.objects.length; i++){
-            this.ctx.fillRect(this.objects[i].x,this.objects[i].y, this.objects[i].w, this.objects[i].h);
-        }
         
-        this.ctx.fillStyle = makeColor(0,0,255,1);
-        this.ctx.fillRect(this.goal.x,this.goal.y, this.goal.w, this.goal.h);   
+        for(var i = 0; i < this.objects.length; i++){
+            if(this.objects[i].type == this.OBJ_TYPE.BLOCK || this.objects[i].type == this.OBJ_TYPE.HORMOVING || this.objects[i].type == this.OBJ_TYPE.VERMOVING){
+                this.ctx.fillStyle = makeColor(0,255,0,1); 
+                this.ctx.fillRect(this.objects[i].x,this.objects[i].y, this.objects[i].w, this.objects[i].h);
+            }
+            
+            else if(this.objects[i].type == this.OBJ_TYPE.GOAL){
+                this.ctx.fillStyle = makeColor(0,0,255,1);
+                this.ctx.fillRect(this.objects[i].x,this.objects[i].y, this.objects[i].w, this.objects[i].h);
+            }
+                
+        }  
         this.ctx.restore();
         this.drawBall(this.ctx);
     },
@@ -162,7 +145,7 @@ app.main = {
         var mouse = getMouse(e);
         
         if(this.curMenuState == this.MENU_STATE.MAIN){
-            this.reinit();
+            this.loadLevel1();
             this.curMenuState = this.MENU_STATE.PLAYING;
             this.curGameState = this.GAME_STATE.DEFAULT; // Change this to "Start" when releasing finished product.
         }
@@ -196,28 +179,38 @@ app.main = {
         return 1/fps;
     },
     
-    reinit: function(){
-        this.objects = [];
+    
+    makeObj: function(x, y, w, h, type){
         
-        //this.block.x = this.canvas.width - 300;
-        //this.block.y = this.canvas.height/2 - this.block.h/2;
-        //this.block.type = this.OBJ_TYPE.BLOCK;
+        var speedX = 0;
+        var speedY = 0;
+        if(type == this.OBJ_TYPE.HORMOVING){
+            speedX = 4;
+        }
         
-        this.objects.push(this.makeBlock(this.canvas.width -300, this.canvas.height/2 - 100, 50, 100, this.OBJ_TYPE.BLOCK));
+        else if(type == this.OBJ_TYPE.VERMOVING){
+            speedY = 4;
+        }
         
-        this.goal.x = 25;
-        this.goal.y = 25;
-        this.goal.type = this.OBJ_TYPE.GOAL;
-        
-        
-        this.ball.x = this.canvas.width/2;
-        this.ball.y = this.canvas.height/2;
-        this.ball.r = 10;
-        this.ball.type = this.OBJ_TYPE.PLAYER;
+        return {x, y, w, h, type, speedX, speedY};
     },
     
-    makeBlock: function(x, y, w, h, type){
-        return {x, y, w, h, type}
+    moveObj: function(){
+        for(var i = 0; i < this.objects.length; i++){
+            if(this.objects[i].type == this.OBJ_TYPE.HORMOVING || this.objects[i].type == this.OBJ_TYPE.VERMOVING){
+                if(this.objects[i].x + this.objects[i].w > this.canvas.width || this.objects[i].x < 0){
+                    this.objects[i].speedX *= -1;
+                }
+                
+                if(this.objects[i].y + this.objects[i].h > this.canvas.height || this.objects[i].y <0){
+                    this.objects[i].speedY *= -1;
+                }
+        
+                this.objects[i].x += this.objects[i].speedX;
+                this.objects[i].y += this.objects[i].speedY;
+            }
+        }
+        
     },
     
     moveBall: function(){
@@ -229,16 +222,34 @@ app.main = {
             this.ball.rotationY *= -1;
         }
         
-        //this.C2RCollides(this.ball, this.block);
-    
+        //If hit a block,
         for(var i = 0; i < this.objects.length; i++){
-            if(this.C2RCollides(this.ball, this.objects[i].x - 2, this.objects[i].y, 4, this.objects[i].h))
-                {
-                    console.log('collides');
-                }
+            if(this.objects[i].type == this.OBJ_TYPE.BLOCK || this.objects[i].type == this.OBJ_TYPE.HORMOVING || this.objects[i].type == this.OBJ_TYPE.VERMOVING){
+                if(this.C2RCollides(this.ball, this.objects[i].x, this.objects[i].y, -4, this.objects[i].h)) //left
+                    {
+                        this.ball.rotationX *= -1;
+                    }
+            
+                else if(this.C2RCollides(this.ball, this.objects[i].x, this.objects[i].y, this.objects[i].w, -4)) //top
+                    {
+                        this.ball.rotationY *= -1;
+                    }
+                else if(this.C2RCollides(this.ball, this.objects[i].x + this.objects[i].w, this.objects[i].y, 4, this.objects[i].h)) // right
+                    {
+                        this.ball.rotationX *= -1;
+                    }
+                        
+                else if(this.C2RCollides(this.ball, this.objects[i].x, this.objects[i].y + this.objects[i].h, this.objects[i].w, 4)) // bottom
+                    {
+                        this.ball.rotationY *= -1;
+                    }
+            }
+            
+            else if(this.objects[i].type == this.OBJ_TYPE.GOAL && this.C2RCollides(this.ball, this.objects[i].x, this.objects[i].y, this.objects[i].w, this.objects[i].h)){
+                this.curGameState = this.GAME_STATE.END;
+                this.curMenuState = this.MENU_STATE.GAME_OVER;
+            }
         }
-
-        this.C2RCollides(this.ball, this.goal);
         
         this.ball.velocityX = this.ball.speed * this.ball.rotationX;
         this.ball.velocityY = this.ball.speed * this.ball.rotationY;
@@ -259,6 +270,16 @@ app.main = {
         ctx.restore();
     },
     
+    makeBall: function(x, y, r, type, speed){
+        
+        var velocityX = 0;
+        var velocityY = 0;
+        var rotationX = 0;
+        var rotationY = 0;
+        
+        return{x,y,r,type,speed,velocityX, velocityY, rotationX, rotationY};
+    },
+    
     C2RCollides: function(circle, rX, rY, rW, rH){
         //Check Collision between two objects or bounds  
         var distX = Math.abs(circle.x + circle.velocityX - rX-rW/2);
@@ -267,39 +288,21 @@ app.main = {
         
         if (distX >(rW/2 + circle.r)){return false;}
         if(distY > (rH/2 + circle.r)){return false;}  
-        if(distX <= (rW/2)){
-            /*
-            if(rect.type == this.OBJ_TYPE.GOAL){
-                //Game Over Code Here
-                this.curGameState = this.GAME_STATE.END;
-                this.curMenuState = this.MENU_STATE.GAME_OVER;
-            }
-            
-            else if(rect.type == this.OBJ_TYPE.BLOCK){
-                //this.ball.rotationX *= -1;
-                //this.ball.x += this.ball.speed * this.ball.rotationX;
-            }
-            */
-            return true;
-        }
-        if(distY <= (rH/2)){
-            /*
-            if(rect.type == this.OBJ_TYPE.GOAL){
-                //Game Over Code Here
-                this.curGameState = this.GAME_STATE.END;
-                this.curMenuState = this.MENU_STATE.GAME_OVER;
-            }
-            
-            else if(rect.type == this.OBJ_TYPE.BLOCK){
-                //this.ball.rotationY *= -1;
-                //this.ball.y += this.ball.speed * this.ball.rotationY;
-            }
-            
-            */
-            return true;
-        }
+        if(distX <= (rW/2)){return true;}
+        if(distY <= (rH/2)){return true;}
 
         return ((distX * distX) + (distY * distY) <= (circle.r * circle.r));
+    },
+    
+    loadLevel1: function(){
+        this.objects = [];
+        this.ball = {};
+        
+        this.objects.push(this.makeObj(this.canvas.width -300, this.canvas.height/2 - 100, 50, 100, this.OBJ_TYPE.BLOCK));
+        this.objects.push(this.makeObj(25, 25, 25, 25, this.OBJ_TYPE.GOAL));       
+        this.objects.push(this.makeObj(25, this.canvas.height - 100, 100, 25, this.OBJ_TYPE.HORMOVING));
+        
+        this.ball = this.makeBall(this.canvas.width/2, this.canvas.height/2, 10, this.OBJ_TYPE.PLAYER, 5);
     },
     
 }; // END app.main
