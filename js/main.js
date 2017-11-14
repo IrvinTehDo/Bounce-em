@@ -10,6 +10,8 @@ app.main = {
     ctx: undefined,
     animationID: 0 ,
     
+    objects: [],
+    
     GAME_STATE: Object.freeze({
         BEGIN: 0,
         DEFAULT: 1,
@@ -48,14 +50,6 @@ app.main = {
         isColliding: true,
     },
     
-    block: {
-        x: 0,
-        y: 0,
-        w: 50,
-        h: 100,
-        type: null,
-    },
-    
     goal: {
         x: 0,
         y: 0,
@@ -76,9 +70,7 @@ app.main = {
         this.canvas.onmouseup = this.doMouseUp.bind(this);
         this.canvas.onmousemove = this.doMouseMove.bind(this);
         
-        this.block.x = this.canvas.width - 300;
-        this.block.y = this.canvas.height/2 - this.block.h/2;
-        this.block.type = this.OBJ_TYPE.BLOCK;
+        this.objects.push(this.makeBlock(this.canvas.width -300, this.canvas.height/2 - 100, 50, 100, this.OBJ_TYPE.BLOCK));
         
         this.goal.x = 25;
         this.goal.y = 25;
@@ -132,8 +124,11 @@ app.main = {
     
     drawGame: function(){
         this.ctx.save();
-        this.ctx.fillStyle = makeColor(0,255,0,1);
-        this.ctx.fillRect(this.block.x,this.block.y, this.block.w, this.block.h);
+        this.ctx.fillStyle = makeColor(0,255,0,1);  
+        for(var i = 0; i < this.objects.length; i++){
+            this.ctx.fillRect(this.objects[i].x,this.objects[i].y, this.objects[i].w, this.objects[i].h);
+        }
+        
         this.ctx.fillStyle = makeColor(0,0,255,1);
         this.ctx.fillRect(this.goal.x,this.goal.y, this.goal.w, this.goal.h);   
         this.ctx.restore();
@@ -202,9 +197,13 @@ app.main = {
     },
     
     reinit: function(){
-        this.block.x = this.canvas.width - 300;
-        this.block.y = this.canvas.height/2 - this.block.h/2;
-        this.block.type = this.OBJ_TYPE.BLOCK;
+        this.objects = [];
+        
+        //this.block.x = this.canvas.width - 300;
+        //this.block.y = this.canvas.height/2 - this.block.h/2;
+        //this.block.type = this.OBJ_TYPE.BLOCK;
+        
+        this.objects.push(this.makeBlock(this.canvas.width -300, this.canvas.height/2 - 100, 50, 100, this.OBJ_TYPE.BLOCK));
         
         this.goal.x = 25;
         this.goal.y = 25;
@@ -217,6 +216,10 @@ app.main = {
         this.ball.type = this.OBJ_TYPE.PLAYER;
     },
     
+    makeBlock: function(x, y, w, h, type){
+        return {x, y, w, h, type}
+    },
+    
     moveBall: function(){
         if(this.ball.x + this.ball.r > this.canvas.width || this.ball.x - this.ball.r < 0){
             this.ball.rotationX *= -1;
@@ -226,7 +229,15 @@ app.main = {
             this.ball.rotationY *= -1;
         }
         
-        this.C2RCollides(this.ball, this.block);
+        //this.C2RCollides(this.ball, this.block);
+    
+        for(var i = 0; i < this.objects.length; i++){
+            if(this.C2RCollides(this.ball, this.objects[i].x - 2, this.objects[i].y, 4, this.objects[i].h))
+                {
+                    console.log('collides');
+                }
+        }
+
         this.C2RCollides(this.ball, this.goal);
         
         this.ball.velocityX = this.ball.speed * this.ball.rotationX;
@@ -248,16 +259,16 @@ app.main = {
         ctx.restore();
     },
     
-    C2RCollides: function(circle, rect){
+    C2RCollides: function(circle, rX, rY, rW, rH){
         //Check Collision between two objects or bounds  
-        var distX = Math.abs(circle.x + circle.velocityX - rect.x-rect.w/2);
-        var distY = Math.abs(circle.y + circle.velocityY - rect.y-rect.h/2);
-        var dist = Math.sqrt(distX - rect.w/2) - Math.sqrt(distY - rect.h/2);
+        var distX = Math.abs(circle.x + circle.velocityX - rX-rW/2);
+        var distY = Math.abs(circle.y + circle.velocityY - rY-rH/2);
+        var dist = Math.sqrt(distX - rW/2) - Math.sqrt(distY - rH/2);
         
-        if (distX >(rect.w/2 + circle.r)){return false;}
-        if(distY > (rect.h/2 + circle.r)){return false;}  
-        if(distX <= (rect.w/2)){
-            
+        if (distX >(rW/2 + circle.r)){return false;}
+        if(distY > (rH/2 + circle.r)){return false;}  
+        if(distX <= (rW/2)){
+            /*
             if(rect.type == this.OBJ_TYPE.GOAL){
                 //Game Over Code Here
                 this.curGameState = this.GAME_STATE.END;
@@ -265,14 +276,14 @@ app.main = {
             }
             
             else if(rect.type == this.OBJ_TYPE.BLOCK){
-                this.ball.rotationX *= -1;
-                this.ball.x += this.ball.speed * this.ball.rotationX;
+                //this.ball.rotationX *= -1;
+                //this.ball.x += this.ball.speed * this.ball.rotationX;
             }
-            
-            //return true;
+            */
+            return true;
         }
-        if(distY <= (rect.h/2)){
-            
+        if(distY <= (rH/2)){
+            /*
             if(rect.type == this.OBJ_TYPE.GOAL){
                 //Game Over Code Here
                 this.curGameState = this.GAME_STATE.END;
@@ -280,12 +291,12 @@ app.main = {
             }
             
             else if(rect.type == this.OBJ_TYPE.BLOCK){
-                this.ball.rotationY *= -1;
-                this.ball.y += this.ball.speed * this.ball.rotationY;
+                //this.ball.rotationY *= -1;
+                //this.ball.y += this.ball.speed * this.ball.rotationY;
             }
             
-            
-            //return true;
+            */
+            return true;
         }
 
         return ((distX * distX) + (distY * distY) <= (circle.r * circle.r));
