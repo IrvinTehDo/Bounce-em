@@ -6,9 +6,9 @@ window.onload = function(){
 };
 
 window.onblur = function(){
-    
+    app.main.pauseGame();
 };
 
 window.onfocus = function(){
-    
+    app.main.unpauseGame();
 };

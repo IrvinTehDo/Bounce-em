@@ -64,6 +64,11 @@ function pointInsideCircle(x, y, I){
     
 }
 
+function pointInsideRectangle(x, y, I){
+    //return true;
+    return (x > I.x && x < I.x + I.w && y > I.y && y < I.y + I.h);
+}
+
 function dotProduct(x1,y1,x2,y2){
     return ((x1*x2) + (y1*y2));
 }
