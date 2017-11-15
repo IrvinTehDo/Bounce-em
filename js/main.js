@@ -54,6 +54,10 @@ app.main = {
         this.canvas.height = this.HEIGHT;
         this.ctx = this.canvas.getContext('2d');
         
+        this.canvas.oncontextmenu = function(){
+            return false;
+        }
+        
         this.canvas.onmousedown  = this.doMouseDown.bind(this);
         
         //this.loadLevel9();
