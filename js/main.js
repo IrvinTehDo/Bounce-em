@@ -12,9 +12,9 @@ app.main = {
     paused: false,
     
     levelButton:[
-        {x: 260, y: 300, w: 50, h: 50},
-        {x: 360, y: 300, w: 50, h: 50},
-        {x: 460, y: 300, w: 50, h: 50}
+        {x: 260, y: 300, w: 50, h: 50, img: app.media.IMAGES.LEVEL1},
+        {x: 360, y: 300, w: 50, h: 50, img: app.media.IMAGES.LEVEL2},
+        {x: 460, y: 300, w: 50, h: 50, img: app.media.IMAGES.LEVEL3}
     ],
     
     objects: [],
@@ -363,9 +363,12 @@ app.main = {
     drawLevelSelect: function(){
         this.ctx.fillStyle = makeColor(125,125,0,1);
         for(var i =0; i < this.levelButton.length; i++){
-            this.ctx.fillRect(this.levelButton[i].x, this.levelButton[i].y, this.levelButton[i].w, this.levelButton[i].h);
+            //this.ctx.fillRect(this.levelButton[i].x, this.levelButton[i].y, this.levelButton[i].w, this.levelButton[i].h);
+            this.ctx.drawImage(this.levelButton[i].img, this.levelButton[i].x, this.levelButton[i].y);
+            
         }
         
+        //this.ctx.drawImage(app.media.IMAGES.STAR, 100,100,50,50); // DRAWS A STAR
     },
     
     pauseGame: function(){

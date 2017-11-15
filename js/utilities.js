@@ -135,6 +135,12 @@ function clamp(val, min, max){
 	return Math.max(min, Math.min(max, val));
 }
 
+function loadImage(src){
+    var img = new Image();
+    img.src = src;
+        
+    return img;
+}
 
  // FULL SCREEN MODE
 function requestFullscreen(element) {
