@@ -9,22 +9,29 @@ app.main = {
     canvas: undefined,
     ctx: undefined,
     animationID: 0 ,
+    paused: false,
+    
+    levelButton:[
+        {x: 260, y: 300, w: 50, h: 50},
+        {x: 360, y: 300, w: 50, h: 50},
+        {x: 460, y: 300, w: 50, h: 50}
+    ],
     
     objects: [],
+    currentLevel: 1,
     
     GAME_STATE: Object.freeze({
         BEGIN: 0,
         DEFAULT: 1,
         MOVING: 2,
-        ROUND_OVER: 3,
-        REPEAT_LEVEL: 4,
-        END: 5
+        GAME_OVER: 3,
+        END: 4
     }),
     
     MENU_STATE: Object.freeze({
         MAIN: 0,
         PLAYING: 1,
-        GAME_OVER: 2,
+        RESULTS: 2,
     }),
     
     OBJ_TYPE: Object.freeze({
@@ -48,10 +55,8 @@ app.main = {
         this.ctx = this.canvas.getContext('2d');
         
         this.canvas.onmousedown  = this.doMouseDown.bind(this);
-        this.canvas.onmouseup = this.doMouseUp.bind(this);
-        this.canvas.onmousemove = this.doMouseMove.bind(this);
         
-        this.loadLevel1();
+        //this.loadLevel9();
         
         this.curGameState = this.GAME_STATE.DEFAULT;
         this.curMenuState = this.MENU_STATE.MAIN;
@@ -62,6 +67,15 @@ app.main = {
     //MARK - Update Loop
     update: function(){
         this.animationID = requestAnimationFrame(this.update.bind(this));
+        
+        //Paused Code
+        
+        if(this.paused){
+            //console.log('yes');
+            this.drawPauseScreen();
+            return;
+        }
+        
         var dt = this.calculateDeltaTime();
         
         //Update Loop
@@ -72,8 +86,7 @@ app.main = {
         }
         
         if(this.curGameState == this.GAME_STATE.MOVING && this.curMenuState == this.MENU_STATE.PLAYING){
-            this.moveBall(); 
-            
+            this.moveBall();   
         }
         
         
@@ -94,8 +107,8 @@ app.main = {
             this.drawMenu();
         }
         
-        else if(this.curMenuState == this.MENU_STATE.GAME_OVER){
-            this.drawGameOver();
+        else if(this.curMenuState == this.MENU_STATE.RESULTS){
+            this.drawResults();
         }
     },
     
@@ -115,20 +128,51 @@ app.main = {
                 
         }  
         this.ctx.restore();
-        this.drawBall(this.ctx);
+        
+        if(this.curGameState == this.GAME_STATE.MOVING || this.curGameState == this.GAME_STATE.DEFAULT){
+            this.drawBall(this.ctx);
+        }
+        
+        else if(this.curGameState == this.GAME_STATE.GAME_OVER){
+            this.drawGameOver();
+        }
+    },
+    
+    drawPauseScreen: function(){
+        //console.log('here');
+        this.ctx.save();
+        this.ctx.fillStyle = "black";
+        this.ctx.fillRect(0,0,this.WIDTH,this.HEIGHT);
+        this.ctx.textAlign = "center";
+        this.ctx.textBaseline = "middle";
+        this.ctx.font = "40pt courier";
+        this.ctx.fillStyle = "white";
+        this.ctx.fillText("... PAUSED ...", this.WIDTH/2, this.HEIGHT/2);
+        this.ctx.restore();
     },
     
     drawMenu: function(){
         this.ctx.save();
         this.ctx.fillStyle = "Red";
         this.ctx.font = '48px Serif';
-        this.ctx.fillText("Main Menu", this.canvas.width/2 - 125, this.canvas.height/2);
+        this.ctx.fillText("Main Menu", this.canvas.width/2 - 125, 200);
         this.ctx.font = '24px Serif';
-        this.ctx.fillText("Click anywhere to play", this.canvas.width/2 - 125, this.canvas.height/2 + 50);
+        //this.ctx.fillText("Click anywhere to play", this.canvas.width/2 - 125, this.canvas.height/2 + 50);
+        this.drawLevelSelect();
         this.ctx.restore();
     },
     
     drawGameOver: function(){
+         this.ctx.save();
+        this.ctx.fillStyle = "Red";
+        this.ctx.font = '48px Serif';
+        this.ctx.fillText("Game Over", this.canvas.width/2 - 125, this.canvas.height/2);
+        this.ctx.font = '24px Serif';
+        this.ctx.fillText("Press 'R' to retry or 'Q' to return to main menu", this.canvas.width/2 - 225, this.canvas.height/2 + 50);
+        this.ctx.restore();
+    },
+    
+    drawResults: function(){
         this.ctx.save();
         this.ctx.fillStyle = "Red";
         this.ctx.font = '48px Serif';
@@ -136,7 +180,6 @@ app.main = {
         this.ctx.font = '24px Serif';
         this.ctx.fillText("Click anywhere to go to main menu", this.canvas.width/2 - 175, this.canvas.height/2 + 50);
         this.ctx.restore();
-        
     },
     
     // MARK - Listener Events
@@ -144,13 +187,25 @@ app.main = {
         //Mouse Functions
         var mouse = getMouse(e);
         
-        if(this.curMenuState == this.MENU_STATE.MAIN){
-            this.loadLevel1();
-            this.curMenuState = this.MENU_STATE.PLAYING;
-            this.curGameState = this.GAME_STATE.DEFAULT; // Change this to "Start" when releasing finished product.
+        if(this.paused){
+            this.paused = false;
+            this.update();
+            return;
         }
         
-        else if(this.curMenuState == this.MENU_STATE.GAME_OVER){
+        if(this.curMenuState == this.MENU_STATE.MAIN){
+            
+            for(var i = 0; i < this.levelButton.length; i++){
+                if(pointInsideRectangle(mouse.x, mouse.y, this.levelButton[i])){
+                    console.log('hit');
+                    this.currentLevel = i+1;
+                    this.loadLevel(this.currentLevel);
+                    break;
+                }
+            }
+        }
+        
+        else if(this.curMenuState == this.MENU_STATE.RESULTS){
             this.curMenuState = this.MENU_STATE.MAIN;
         }
         
@@ -161,13 +216,6 @@ app.main = {
         }       
     },
     
-    doMouseUp: function(e){
-        
-    },
-    
-    doMouseMove: function(e){
-        
-    },
     
     // MARK - Helper Functions
     calculateDeltaTime: function(){
@@ -198,11 +246,19 @@ app.main = {
     moveObj: function(){
         for(var i = 0; i < this.objects.length; i++){
             if(this.objects[i].type == this.OBJ_TYPE.HORMOVING || this.objects[i].type == this.OBJ_TYPE.VERMOVING){
+                
+                for(var z = 0; z < this.objects.length; z++){
+                    if(this.AABBCollides(this.objects[i], this.objects[z].x, this.objects[z].y, -4, this.objects[z].h)){this.objects[i].speedX *= -1;} // left
+                    else if(this.AABBCollides(this.objects[i], this.objects[z].x, this.objects[z].y, this.objects[z].w, -4)){this.objects[i].speedY *= -1;} // top
+                    else if(this.AABBCollides(this.objects[i], this.objects[z].x + this.objects[z].w, this.objects[z].y, 4, this.objects[z].h)){this.objects[i].speedX *= -1;} // right
+                    else if(this.AABBCollides(this.objects[i], this.objects[z].x, this.objects[z].y + this.objects[z].h, this.objects[z].w, 4)){this.objects[i].speedY *= -1;} // bottom
+                }
+                
                 if(this.objects[i].x + this.objects[i].w > this.canvas.width || this.objects[i].x < 0){
                     this.objects[i].speedX *= -1;
                 }
                 
-                if(this.objects[i].y + this.objects[i].h > this.canvas.height || this.objects[i].y <0){
+                else if(this.objects[i].y + this.objects[i].h > this.canvas.height || this.objects[i].y <0){
                     this.objects[i].speedY *= -1;
                 }
         
@@ -215,11 +271,13 @@ app.main = {
     
     moveBall: function(){
         if(this.ball.x + this.ball.r > this.canvas.width || this.ball.x - this.ball.r < 0){
-            this.ball.rotationX *= -1;
+            //this.ball.rotationX *= -1;
+            this.curGameState = this.GAME_STATE.GAME_OVER;
         }
         
         if(this.ball.y + this.ball.r > this.canvas.height || this.ball.y - this.ball.r < 0){
-            this.ball.rotationY *= -1;
+            //this.ball.rotationY *= -1;
+            this.curGameState = this.GAME_STATE.GAME_OVER;
         }
         
         //If hit a block,
@@ -247,7 +305,7 @@ app.main = {
             
             else if(this.objects[i].type == this.OBJ_TYPE.GOAL && this.C2RCollides(this.ball, this.objects[i].x, this.objects[i].y, this.objects[i].w, this.objects[i].h)){
                 this.curGameState = this.GAME_STATE.END;
-                this.curMenuState = this.MENU_STATE.GAME_OVER;
+                this.curMenuState = this.MENU_STATE.RESULTS;
             }
         }
         
@@ -286,7 +344,7 @@ app.main = {
         var distY = Math.abs(circle.y + circle.velocityY - rY-rH/2);
         var dist = Math.sqrt(distX - rW/2) - Math.sqrt(distY - rH/2);
         
-        if (distX >(rW/2 + circle.r)){return false;}
+        if(distX >(rW/2 + circle.r)){return false;}
         if(distY > (rH/2 + circle.r)){return false;}  
         if(distX <= (rW/2)){return true;}
         if(distY <= (rH/2)){return true;}
@@ -294,7 +352,55 @@ app.main = {
         return ((distX * distX) + (distY * distY) <= (circle.r * circle.r));
     },
     
-    loadLevel1: function(){
+    AABBCollides: function(r1, r2x, r2y,r2w,r2h){
+        return (r1.x < r2x + r2w && r1.x + r1.w > r2x && r1.y < r2y + r2h && r1.h + r1.y > r2y)
+    },
+    
+    drawLevelSelect: function(){
+        this.ctx.fillStyle = makeColor(125,125,0,1);
+        for(var i =0; i < this.levelButton.length; i++){
+            this.ctx.fillRect(this.levelButton[i].x, this.levelButton[i].y, this.levelButton[i].w, this.levelButton[i].h);
+        }
+        
+    },
+    
+    pauseGame: function(){
+        this.paused = true;
+        
+        cancelAnimationFrame(this.animationID);
+        
+        this.update();
+    },
+    
+    unpauseGame: function(){  
+        cancelAnimationFrame(this.animationID);
+        
+        this.paused = false;
+        
+        this.update();
+    },
+    
+    loadLevel: function(level){
+        switch(level){
+            case 1:
+                this.loadLevel1();
+                break;
+            case 2:
+                this.loadLevel2();
+                break;
+            case 3:
+                this.loadLevel3();
+                break;
+            default:
+                this.loadLevel0();
+                break;
+        }
+        this.curMenuState = this.MENU_STATE.PLAYING;
+        this.curGameState = this.GAME_STATE.DEFAULT;
+        
+    },
+    
+    loadLevel0: function(){
         this.objects = [];
         this.ball = {};
         
@@ -304,5 +410,50 @@ app.main = {
         
         this.ball = this.makeBall(this.canvas.width/2, this.canvas.height/2, 10, this.OBJ_TYPE.PLAYER, 5);
     },
+    
+    loadLevel1: function(){
+        this.objects = [];
+        this.ball = {};
+        
+        this.objects.push(this.makeObj(0,0,this.canvas.width, 200, this.OBJ_TYPE.BLOCK));
+        this.objects.push(this.makeObj(0,this.canvas.height - 200,this.canvas.width, this.canvas.height, this.OBJ_TYPE.BLOCK));
+        this.objects.push(this.makeObj(0, 0, 25, this.canvas.height, this.OBJ_TYPE.BLOCK)); 
+        this.objects.push(this.makeObj(this.canvas.width - 25, 0, this.canvas.width, this.canvas.height, this.OBJ_TYPE.BLOCK)); 
+        this.objects.push(this.makeObj(this.canvas.width - 200, this.canvas.height/2 - 12.5, 25, 25, this.OBJ_TYPE.GOAL)); 
+        this.ball = this.makeBall(100, this.canvas.height/2, 10, this.OBJ_TYPE.PLAYER, 5);
+    },
+    
+    loadLevel2: function(){
+        this.objects = [];
+        this.ball = {};
+        
+        this.objects.push(this.makeObj(500,100,25, this.canvas.height - 200, this.OBJ_TYPE.BLOCK));
+        this.objects.push(this.makeObj(0, 0, this.canvas.width, 25, this.OBJ_TYPE.BLOCK)); 
+        this.objects.push(this.makeObj(0, this.canvas.height - 25, this.canvas.width, this.canvas.height, this.OBJ_TYPE.BLOCK));
+        this.objects.push(this.makeObj(this.canvas.width - 25, 0, this.canvas.width, this.canvas.height, this.OBJ_TYPE.BLOCK)); 
+        
+        this.objects.push(this.makeObj(this.canvas.width - 200, this.canvas.height/2 - 12.5, 25, 25, this.OBJ_TYPE.GOAL)); 
+        
+        this.ball = this.makeBall(100, this.canvas.height/2, 10, this.OBJ_TYPE.PLAYER, 5);
+    },
+    
+    loadLevel3: function(){
+        this.objects = [];
+        this.ball = {};
+        
+        this.objects.push(this.makeObj(500,100,25, this.canvas.height - 200, this.OBJ_TYPE.BLOCK));
+        
+        this.objects.push(this.makeObj(0, this.canvas.height - 25, 100, 25, this.OBJ_TYPE.HORMOVING));
+        this.objects.push(this.makeObj(this.canvas.width - 125, 0, 100, 25, this.OBJ_TYPE.HORMOVING));
+        
+        this.objects.push(this.makeObj(this.canvas.width -25 ,0,25, this.canvas.height, this.OBJ_TYPE.BLOCK));
+        
+        this.objects.push(this.makeObj(this.canvas.width - 200, this.canvas.height/2 - 25, 50, 50, this.OBJ_TYPE.GOAL)); 
+
+        
+        this.ball = this.makeBall(100, this.canvas.height/2, 10, this.OBJ_TYPE.PLAYER, 5);
+    },
+    
+    
     
 }; // END app.main
