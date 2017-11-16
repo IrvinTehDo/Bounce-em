@@ -24,7 +24,7 @@ window.addEventListener("keydown",function(e){
 	
 window.addEventListener("keyup",function(e){
 	console.log("keyup=" + e.keyCode);
-	myKeys.keydown[e.keyCode] = false;
+	
 
 	var char = String.fromCharCode(e.keyCode);
 
@@ -38,4 +38,10 @@ window.addEventListener("keyup",function(e){
         app.main.curMenuState = app.main.MENU_STATE.MAIN;
         app.main.curGameState = app.main.GAME_STATE.BEGIN;
     }
+    
+    if(myKeys.keydown[65] && myKeys.keydown[68] && myKeys.keydown[70]){
+        initLocalStorage();
+    }
+    
+    myKeys.keydown[e.keyCode] = false;
 });
