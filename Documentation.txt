@@ -1,0 +1,41 @@
+Grade yourself and your partner (if applicable). Justify your grading. Use a grade of 0-100%.
+
+
+Bounce 'Em Documentation
+Irvin Do
+
+
+The game turned out the way I imagined it to be besides from the graphics which are pretty simple, you get from point A to point B by guiding the ball to the object.
+
+Requirements:
+	Media Requirements:
+		First, we have a background sound that loops throughout the entire experience. It pauses when we lose focus and resumes when we regain focus. Next, for effect sounds, we have the bounce effect. Everytime the ball hits a wall, it will play a bounce sound. For images, I went with an abstract design style. I made the level selectors in photoshop and imported the stars from the internet (see sources). Font-wise, Audiowave was the first thing i saw when looking through google fonts and it caught my eye immediately so I added it to my project. All animation and drawing is done in canvas. Unfortunatly, I forgot to add particle effects thus the game does not look too visually appealing. (16/20).
+		
+	Interaction Requirements:
+		The user is able to control which level they want to go to, if they want to restart the level, if they want to go back to the main menu, and if they want to clear their saves. On top of that, the player controls a ball to navigate to the goalpoint. All keypresses should be easily done with one hand. A 'Key Daemon' is used to check which keys are pressed.
+	
+	Usability Requirements:
+		Game pauses and unpauses on focus loss and gain. Instructions are provided in the html below the canvas and from there it's a simple point at the screen and click. The game features a lot of trial and error, should the user realize that they aren't going to clear the level and that they will probably game over, they have the option of restarting the level immediately. I did not use UI on screen buttons because since this is a point and click game, keypresses are a lot more practical than buttons. (20/20)
+		
+	Game Design Requirements:
+		This game requires the player to get their ball from the starting point to the blue goal. To do so, they must navigate the ball that bounces off walls towards the goal. Should they leave the screen, they will lose the game. The game offers the player multiple ways of reaching from point A to point B. Where they click to initally push the ball does matter whether they make it in three seconds, twenty, or not at all. This game is all trial and error and the player is encourage to spam the 'R' key which resets the current level to its inital state. (20/20)
+	
+	Coding Requirements:
+		Images are preloaded in the media.js file and are called throughout the app. Objects literals are used frequently when making objects, making game states, and for various of other reasons. The module pattern is followed, and the ball as well as the platforms are created through a function and passed back into an array. (20/20)
+		
+	Above and Beyond:
+		I utilized localStorage to track if a player has cleared a level or not indicated by the stars on the main menu. If there is a star below the level, the player has cleared the level.
+		
+The Bad and the Good:
+	This time around, the quality of my project is lower than the last. I just didn't feel like there was that much time in between projects and the midterm. I wasn't able to implement a particle system or just make the game prettier than I first hoped. If I had more time, I would have like to added a level builder which, when you upload a txt file, will read through each line and character and create blocks based on what is in the text file. 
+	
+Resources/Sources:
+	Media:
+		Star - https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Gold_Star.svg/2000px-Gold_Star.svg.png
+
+		Bounce Sound - https://freesound.org/people/OwlStorm/sounds/404769/ 
+
+		Background Music - https://freesound.org/people/Magntron/sounds/335571/
+		
+Grade:
+	I feel that a grade of 87/100 would be justified for this project as I failed one of the media requirements and did not implement as many above and beyond features as I had hoped to. 

@@ -78,6 +78,7 @@ function magnitude(x,y){
     return mag;
 }
 
+//Grabs the angle between two points.
 function angleBetweenTwoPoints(x1,y1,x2,y2){
     var angle = {
         x: 0.0,
@@ -85,14 +86,10 @@ function angleBetweenTwoPoints(x1,y1,x2,y2){
     };
 
     var z = Math.atan2(y1-y2,x1-x2);
-    //console.log(z);
-    
+
     angle.x = Math.cos(z);
     angle.y = Math.sin(z);
-    //console.log(angle.x);
-    
-    //console.log(Math.cos());
-    
+
     return angle;
 }
 
@@ -113,7 +110,7 @@ function loadImagesWithCallback(sources, callback) {
 	  imageObjects[i] = new Image();
 	  imageObjects[i].onload = function() {
 	  	numLoadedImages++;
-	  	console.log("loaded image at '" + this.src + "'")
+	  	//console.log("loaded image at '" + this.src + "'")
 		if(numLoadedImages >= numImages) {
 		  callback(imageObjects); // send the images back
 		}
