@@ -10,6 +10,7 @@ app.main = {
     animationID: 0 ,
     paused: false,
     
+    // Initializes and gives values to the level buttons on the main menu. Since it's in an array, we start from 0. Therefore, for level 1 we need [i+1]
     levelButton:[
         {x: 260, y: 300, w: 50, h: 50, img: app.media.IMAGES.LEVEL1},
         {x: 360, y: 300, w: 50, h: 50, img: app.media.IMAGES.LEVEL2},
@@ -53,14 +54,14 @@ app.main = {
         this.canvas.height = this.HEIGHT;
         this.ctx = this.canvas.getContext('2d');
         
+        //Prevents the 'Right Clicking Menu' on the canvas.
         this.canvas.oncontextmenu = function(){
             return false;
         }
         
         this.canvas.onmousedown  = this.doMouseDown.bind(this);
         
-        //this.loadLevel9();
-        
+        //Set states to main menu and update it.
         this.curGameState = this.GAME_STATE.DEFAULT;
         this.curMenuState = this.MENU_STATE.MAIN;
         
@@ -74,7 +75,6 @@ app.main = {
         //Paused Code
         
         if(this.paused){
-            //console.log('yes');
             this.drawPauseScreen();
             return;
         }
@@ -82,50 +82,43 @@ app.main = {
         var dt = this.calculateDeltaTime();
         
         //Update Loop
-        //this.moveBall();
         
-        if((this.curGameState == this.GAME_STATE.DEFAULT || this.curGameState == this.GAME_STATE.MOVING) && this.curMenuState == this.MENU_STATE.PLAYING){
-            this.moveObj();
-        }
+        if((this.curGameState == this.GAME_STATE.DEFAULT || this.curGameState == this.GAME_STATE.MOVING) && this.curMenuState == this.MENU_STATE.PLAYING){this.moveObj(); }
         
-        if(this.curGameState == this.GAME_STATE.MOVING && this.curMenuState == this.MENU_STATE.PLAYING){
-            this.moveBall();   
-        }
+        if(this.curGameState == this.GAME_STATE.MOVING && this.curMenuState == this.MENU_STATE.PLAYING){this.moveBall();}
         
         
         this.draw();
        
     },
     
+    // MARK: Canvas Draws
+    
+    // Clears the canvas by filling it black, then draws depending on MENU state.
     draw: function(){
         
         this.ctx.fillStyle = "black";
         this.ctx.fillRect(0,0,this.WIDTH,this.HEIGHT);
+
+        if(this.curMenuState == this.MENU_STATE.PLAYING){this.drawGame();}
         
+        else if(this.curMenuState == this.MENU_STATE.MAIN){this.drawMenu();}
         
-        
-        if(this.curMenuState == this.MENU_STATE.PLAYING){
-            this.drawGame();
-        }
-        
-        else if(this.curMenuState == this.MENU_STATE.MAIN){
-            this.drawMenu();
-        }
-        
-        else if(this.curMenuState == this.MENU_STATE.RESULTS){
-            this.drawResults();
-        }
+        else if(this.curMenuState == this.MENU_STATE.RESULTS){this.drawResults();}
     },
     
     drawGame: function(){
         this.ctx.save();
         
         for(var i = 0; i < this.objects.length; i++){
+            
+            //If platform, draw them a different color. IN this case, green.
             if(this.objects[i].type == this.OBJ_TYPE.BLOCK || this.objects[i].type == this.OBJ_TYPE.HORMOVING || this.objects[i].type == this.OBJ_TYPE.VERMOVING){
                 this.ctx.fillStyle = makeColor(0,255,0,1); 
                 this.ctx.fillRect(this.objects[i].x,this.objects[i].y, this.objects[i].w, this.objects[i].h);
             }
             
+            //If the goal marker, make it blue
             else if(this.objects[i].type == this.OBJ_TYPE.GOAL){
                 this.ctx.fillStyle = makeColor(0,0,255,1);
                 this.ctx.fillRect(this.objects[i].x,this.objects[i].y, this.objects[i].w, this.objects[i].h);
@@ -134,17 +127,13 @@ app.main = {
         }  
         this.ctx.restore();
         
-        if(this.curGameState == this.GAME_STATE.MOVING || this.curGameState == this.GAME_STATE.DEFAULT){
-            this.drawBall(this.ctx);
-        }
-        
-        else if(this.curGameState == this.GAME_STATE.GAME_OVER){
-            this.drawGameOver();
-        }
+        // If ball is still moving or ball is in its inital state, draw it.
+        if(this.curGameState == this.GAME_STATE.MOVING || this.curGameState == this.GAME_STATE.DEFAULT){this.drawBall(this.ctx); }
+        // If we lost, the ball is probably gone and we don't need to draw it.
+        else if(this.curGameState == this.GAME_STATE.GAME_OVER){this.drawGameOver();}
     },
     
     drawPauseScreen: function(){
-        //console.log('here');
         this.ctx.save();
         this.ctx.fillStyle = "black";
         this.ctx.fillRect(0,0,this.WIDTH,this.HEIGHT);
@@ -193,7 +182,6 @@ app.main = {
         var mouse = getMouse(e);
         mouse.x += this.WIDTH/2;
         mouse.y += this.HEIGHT/2;
-        console.log(mouse.x +", " + mouse.y);
         if(this.paused){
             this.paused = false;
             this.update();
@@ -201,11 +189,9 @@ app.main = {
         }
         
         if(this.curMenuState == this.MENU_STATE.MAIN){
-            console.log("Yes");
             for(var i = 0; i < this.levelButton.length; i++){
                 
                 if(pointInsideRectangle(mouse.x, mouse.y, this.levelButton[i])){
-                    console.log('hit');
                     this.currentLevel = i+1;
                     this.loadLevel(this.currentLevel);
                     break;
@@ -219,6 +205,7 @@ app.main = {
         
         else if(this.curMenuState == this.MENU_STATE.PLAYING && this.curGameState == this.GAME_STATE.DEFAULT){
             this.curGameState = this.GAME_STATE.MOVING;
+            // Make the ball face opposite of where the mouse is.
             this.ball.rotationX = angleBetweenTwoPoints(mouse.x, mouse.y, this.ball.x, this.ball.y).x * -1;
             this.ball.rotationY = angleBetweenTwoPoints(mouse.x, mouse.y, this.ball.x, this.ball.y).y * -1;   
         }       
@@ -235,7 +222,7 @@ app.main = {
         return 1/fps;
     },
     
-    
+    // Makes an object and returns it with properties  
     makeObj: function(x, y, w, h, type){
         
         var speedX = 0;
@@ -251,10 +238,12 @@ app.main = {
         return {x, y, w, h, type, speedX, speedY};
     },
     
+    // Moves every non-player object in the game and checks collision.
     moveObj: function(){
         for(var i = 0; i < this.objects.length; i++){
             if(this.objects[i].type == this.OBJ_TYPE.HORMOVING || this.objects[i].type == this.OBJ_TYPE.VERMOVING){
                 
+                //Does this specific object collide with any other object in the game? If so, where? Reflect based on results
                 for(var z = 0; z < this.objects.length; z++){
                     if(this.AABBCollides(this.objects[i], this.objects[z].x, this.objects[z].y, -4, this.objects[z].h)){this.objects[i].speedX *= -1;} // left
                     else if(this.AABBCollides(this.objects[i], this.objects[z].x, this.objects[z].y, this.objects[z].w, -4)){this.objects[i].speedY *= -1;} // top
@@ -262,6 +251,7 @@ app.main = {
                     else if(this.AABBCollides(this.objects[i], this.objects[z].x, this.objects[z].y + this.objects[z].h, this.objects[z].w, 4)){this.objects[i].speedY *= -1;} // bottom
                 }
                 
+                //Edge detection
                 if(this.objects[i].x + this.objects[i].w > this.canvas.width || this.objects[i].x < 0){
                     this.objects[i].speedX *= -1;
                 }
@@ -269,7 +259,8 @@ app.main = {
                 else if(this.objects[i].y + this.objects[i].h > this.canvas.height || this.objects[i].y <0){
                     this.objects[i].speedY *= -1;
                 }
-        
+            
+                //Apply posistion update
                 this.objects[i].x += this.objects[i].speedX;
                 this.objects[i].y += this.objects[i].speedY;
             }
@@ -278,18 +269,19 @@ app.main = {
     },
     
     moveBall: function(){
+        
+        // Did we leave the screen? Game Over if we did.
         if(this.ball.x + this.ball.r > this.canvas.width || this.ball.x - this.ball.r < 0){
-            //this.ball.rotationX *= -1;
+            this.curGameState = this.GAME_STATE.GAME_OVER;
+        }    
+        else if(this.ball.y + this.ball.r > this.canvas.height || this.ball.y - this.ball.r < 0){
             this.curGameState = this.GAME_STATE.GAME_OVER;
         }
         
-        if(this.ball.y + this.ball.r > this.canvas.height || this.ball.y - this.ball.r < 0){
-            //this.ball.rotationY *= -1;
-            this.curGameState = this.GAME_STATE.GAME_OVER;
-        }
-        
-        //If hit a block,
+        //If hit an object, bounce
         for(var i = 0; i < this.objects.length; i++){
+            
+            //Does the player ball collide with any other object in the game? If so, where? Reflect based on results. Checks which part of the object we hit for more accurate collision and reflection.
             if(this.objects[i].type == this.OBJ_TYPE.BLOCK || this.objects[i].type == this.OBJ_TYPE.HORMOVING || this.objects[i].type == this.OBJ_TYPE.VERMOVING){
                 if(this.C2RCollides(this.ball, this.objects[i].x, this.objects[i].y, -4, this.objects[i].h)) //left
                     {
@@ -315,6 +307,7 @@ app.main = {
                     }
             }
             
+            // Did we hit the goal marker? If so, we won! Update game state and save the clear.
             else if(this.objects[i].type == this.OBJ_TYPE.GOAL && this.C2RCollides(this.ball, this.objects[i].x, this.objects[i].y, this.objects[i].w, this.objects[i].h)){
                 this.curGameState = this.GAME_STATE.END;
                 this.curMenuState = this.MENU_STATE.RESULTS;
@@ -351,7 +344,7 @@ app.main = {
         return{x,y,r,type,speed,velocityX, velocityY, rotationX, rotationY};
     },
     
-    
+    // Check if circle collides with a rectangle
     C2RCollides: function(circle, rX, rY, rW, rH){
         //Check Collision between two objects or bounds  
         var distX = Math.abs(circle.x + circle.velocityX - rX-rW/2);
@@ -366,26 +359,22 @@ app.main = {
         return ((distX * distX) + (distY * distY) <= (circle.r * circle.r));
     },
     
+    // Check if rectangle collides with another rectangle.
     AABBCollides: function(r1, r2x, r2y,r2w,r2h){
         return (r1.x < r2x + r2w && r1.x + r1.w > r2x && r1.y < r2y + r2h && r1.h + r1.y > r2y)
     },
     
+    
     drawLevelSelect: function(){
         this.ctx.fillStyle = makeColor(125,125,0,1);
         for(var i =0; i < this.levelButton.length; i++){
-            //this.ctx.fillRect(this.levelButton[i].x, this.levelButton[i].y, this.levelButton[i].w, this.levelButton[i].h);
             this.ctx.drawImage(this.levelButton[i].img, this.levelButton[i].x, this.levelButton[i].y);
             
-            //console.log("level"+(i+1));
-            //console.log(window.localStorage.getItem("level"+(i+1)) == "1");
-            
+            // If we had cleared that level, draw a star under it.
             if(window.localStorage.getItem("level"+(i+1)) == "1"){
                 this.ctx.drawImage(app.media.IMAGES.STAR, this.levelButton[i].x, this.levelButton[i].y + 70 , 50, 50);
-
             }
         }
-        
-        //this.ctx.drawImage(app.media.IMAGES.STAR, 100,100,50,50); // DRAWS A STAR
     },
     
     pauseGame: function(){

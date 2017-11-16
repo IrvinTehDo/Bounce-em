@@ -2,6 +2,7 @@
 var app = app || {};
 
 window.onload = function(){
+    //If player hasn't played, create save file.
     if(window.localStorage.getItem('firstTime') == null){
         //init local storage
         initLocalStorage();
@@ -20,6 +21,7 @@ window.onfocus = function(){
     app.main.unpauseGame();
 };
 
+//Resets all progress to inital state.
 function initLocalStorage(){
     window.localStorage.setItem("level1","0");
     window.localStorage.setItem("level2","0");
