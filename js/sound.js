@@ -10,6 +10,8 @@ app.sound = (function(){
 	var SOUNDS = {
         BOUNCE: "media/bounce.wav",
     };
+    
+    var timePaused = 0;
 
 	function init(){
 		bgAudio = document.querySelector("#bgAudio");
@@ -18,7 +20,7 @@ app.sound = (function(){
 		
 	function stopBGAudio(){
 		bgAudio.pause();
-		bgAudio.currentTime = 0;
+		timePaused = bgAudio.currentTime;
 	}
 	
 	function playEffect(toPlay){
@@ -27,6 +29,11 @@ app.sound = (function(){
 		effectSound.src = toPlay;
 		effectSound.play();
 	}
+    
+    function resumeBGAudio(){
+        //bgAudio.currentTime = timePaused;
+        bgAudio.play();
+    }
     
     function playBGAudio(){
         bgAudio.play();
@@ -39,6 +46,7 @@ app.sound = (function(){
         init: init,
         stopBGAudio: stopBGAudio,
         playEffect: playEffect,
-        playBGAudio: playBGAudio
+        playBGAudio: playBGAudio,
+        resumeBGAudio: resumeBGAudio,
     };
 }());

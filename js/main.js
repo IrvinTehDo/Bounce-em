@@ -65,6 +65,8 @@ app.main = {
         this.curGameState = this.GAME_STATE.DEFAULT;
         this.curMenuState = this.MENU_STATE.MAIN;
         
+        this.sound.playBGAudio();   
+        
         this.update();
     },
     
@@ -387,7 +389,7 @@ app.main = {
     
     unpauseGame: function(){  
         cancelAnimationFrame(this.animationID);
-        this.sound.playBGAudio();
+        this.sound.resumeBGAudio();
         this.paused = false;
         
         this.update();
