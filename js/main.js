@@ -1,20 +1,19 @@
 "use strict";
 
 var app = app || {};
-
 app.main = {
     WIDTH: 800,
     HEIGHT: 600,
-    
+    sound: undefined,
     canvas: undefined,
     ctx: undefined,
     animationID: 0 ,
     paused: false,
     
     levelButton:[
-        {x: 260, y: 300, w: 50, h: 50},
-        {x: 360, y: 300, w: 50, h: 50},
-        {x: 460, y: 300, w: 50, h: 50}
+        {x: 260, y: 300, w: 50, h: 50, img: app.media.IMAGES.LEVEL1},
+        {x: 360, y: 300, w: 50, h: 50, img: app.media.IMAGES.LEVEL2},
+        {x: 460, y: 300, w: 50, h: 50, img: app.media.IMAGES.LEVEL3}
     ],
     
     objects: [],
@@ -53,6 +52,10 @@ app.main = {
         this.canvas.width = this.WIDTH;
         this.canvas.height = this.HEIGHT;
         this.ctx = this.canvas.getContext('2d');
+        
+        this.canvas.oncontextmenu = function(){
+            return false;
+        }
         
         this.canvas.onmousedown  = this.doMouseDown.bind(this);
         
@@ -95,9 +98,11 @@ app.main = {
     },
     
     draw: function(){
-        // Draw Loop
+        
         this.ctx.fillStyle = "black";
         this.ctx.fillRect(0,0,this.WIDTH,this.HEIGHT);
+        
+        
         
         if(this.curMenuState == this.MENU_STATE.PLAYING){
             this.drawGame();
@@ -145,7 +150,7 @@ app.main = {
         this.ctx.fillRect(0,0,this.WIDTH,this.HEIGHT);
         this.ctx.textAlign = "center";
         this.ctx.textBaseline = "middle";
-        this.ctx.font = "40pt courier";
+        this.ctx.font = "40pt Audiowide";
         this.ctx.fillStyle = "white";
         this.ctx.fillText("... PAUSED ...", this.WIDTH/2, this.HEIGHT/2);
         this.ctx.restore();
@@ -154,10 +159,10 @@ app.main = {
     drawMenu: function(){
         this.ctx.save();
         this.ctx.fillStyle = "Red";
-        this.ctx.font = '48px Serif';
-        this.ctx.fillText("Main Menu", this.canvas.width/2 - 125, 200);
-        this.ctx.font = '24px Serif';
-        //this.ctx.fillText("Click anywhere to play", this.canvas.width/2 - 125, this.canvas.height/2 + 50);
+        this.ctx.font = '48px Audiowide';
+        this.ctx.fillText("Main Menu", this.canvas.width/2 - 150, 200);
+        this.ctx.font = '24px Audiowide';
+        this.ctx.fillText("Click on a box to go to that level", this.canvas.width/2 - 225, this.canvas.height - 100);
         this.drawLevelSelect();
         this.ctx.restore();
     },
@@ -165,20 +170,20 @@ app.main = {
     drawGameOver: function(){
          this.ctx.save();
         this.ctx.fillStyle = "Red";
-        this.ctx.font = '48px Serif';
-        this.ctx.fillText("Game Over", this.canvas.width/2 - 125, this.canvas.height/2);
-        this.ctx.font = '24px Serif';
-        this.ctx.fillText("Press 'R' to retry or 'Q' to return to main menu", this.canvas.width/2 - 225, this.canvas.height/2 + 50);
+        this.ctx.font = '48px Audiowide';
+        this.ctx.fillText("Game Over", this.canvas.width/2 - 150, this.canvas.height/2);
+        this.ctx.font = '24px Audiowide';
+        this.ctx.fillText("Press 'R' to retry or 'Q' to return to main menu", this.canvas.width/2 - 300, this.canvas.height/2 + 50);
         this.ctx.restore();
     },
     
     drawResults: function(){
         this.ctx.save();
         this.ctx.fillStyle = "Red";
-        this.ctx.font = '48px Serif';
-        this.ctx.fillText("Game Over", this.canvas.width/2 - 125, this.canvas.height/2);
-        this.ctx.font = '24px Serif';
-        this.ctx.fillText("Click anywhere to go to main menu", this.canvas.width/2 - 175, this.canvas.height/2 + 50);
+        this.ctx.font = '48px Audiowide';
+        this.ctx.fillText("Success!", this.canvas.width/2 - 150, this.canvas.height/2);
+        this.ctx.font = '24px Audiowide';
+        this.ctx.fillText("Click anywhere to go to main menu", this.canvas.width/2 - 250, this.canvas.height/2 + 50);
         this.ctx.restore();
     },
     
@@ -186,7 +191,9 @@ app.main = {
     doMouseDown: function(e){
         //Mouse Functions
         var mouse = getMouse(e);
-        
+        mouse.x += this.WIDTH/2;
+        mouse.y += this.HEIGHT/2;
+        console.log(mouse.x +", " + mouse.y);
         if(this.paused){
             this.paused = false;
             this.update();
@@ -194,8 +201,9 @@ app.main = {
         }
         
         if(this.curMenuState == this.MENU_STATE.MAIN){
-            
+            console.log("Yes");
             for(var i = 0; i < this.levelButton.length; i++){
+                
                 if(pointInsideRectangle(mouse.x, mouse.y, this.levelButton[i])){
                     console.log('hit');
                     this.currentLevel = i+1;
@@ -285,20 +293,24 @@ app.main = {
             if(this.objects[i].type == this.OBJ_TYPE.BLOCK || this.objects[i].type == this.OBJ_TYPE.HORMOVING || this.objects[i].type == this.OBJ_TYPE.VERMOVING){
                 if(this.C2RCollides(this.ball, this.objects[i].x, this.objects[i].y, -4, this.objects[i].h)) //left
                     {
+                        this.sound.playEffect(this.sound.SOUNDS.BOUNCE);
                         this.ball.rotationX *= -1;
                     }
             
                 else if(this.C2RCollides(this.ball, this.objects[i].x, this.objects[i].y, this.objects[i].w, -4)) //top
                     {
+                        this.sound.playEffect(this.sound.SOUNDS.BOUNCE);
                         this.ball.rotationY *= -1;
                     }
                 else if(this.C2RCollides(this.ball, this.objects[i].x + this.objects[i].w, this.objects[i].y, 4, this.objects[i].h)) // right
                     {
+                        this.sound.playEffect(this.sound.SOUNDS.BOUNCE);
                         this.ball.rotationX *= -1;
                     }
                         
                 else if(this.C2RCollides(this.ball, this.objects[i].x, this.objects[i].y + this.objects[i].h, this.objects[i].w, 4)) // bottom
                     {
+                        this.sound.playEffect(this.sound.SOUNDS.BOUNCE);
                         this.ball.rotationY *= -1;
                     }
             }
@@ -306,6 +318,7 @@ app.main = {
             else if(this.objects[i].type == this.OBJ_TYPE.GOAL && this.C2RCollides(this.ball, this.objects[i].x, this.objects[i].y, this.objects[i].w, this.objects[i].h)){
                 this.curGameState = this.GAME_STATE.END;
                 this.curMenuState = this.MENU_STATE.RESULTS;
+                window.localStorage.setItem("level"+this.currentLevel, "1");
             }
         }
         
@@ -338,6 +351,7 @@ app.main = {
         return{x,y,r,type,speed,velocityX, velocityY, rotationX, rotationY};
     },
     
+    
     C2RCollides: function(circle, rX, rY, rW, rH){
         //Check Collision between two objects or bounds  
         var distX = Math.abs(circle.x + circle.velocityX - rX-rW/2);
@@ -359,14 +373,24 @@ app.main = {
     drawLevelSelect: function(){
         this.ctx.fillStyle = makeColor(125,125,0,1);
         for(var i =0; i < this.levelButton.length; i++){
-            this.ctx.fillRect(this.levelButton[i].x, this.levelButton[i].y, this.levelButton[i].w, this.levelButton[i].h);
+            //this.ctx.fillRect(this.levelButton[i].x, this.levelButton[i].y, this.levelButton[i].w, this.levelButton[i].h);
+            this.ctx.drawImage(this.levelButton[i].img, this.levelButton[i].x, this.levelButton[i].y);
+            
+            //console.log("level"+(i+1));
+            //console.log(window.localStorage.getItem("level"+(i+1)) == "1");
+            
+            if(window.localStorage.getItem("level"+(i+1)) == "1"){
+                this.ctx.drawImage(app.media.IMAGES.STAR, this.levelButton[i].x, this.levelButton[i].y + 70 , 50, 50);
+
+            }
         }
         
+        //this.ctx.drawImage(app.media.IMAGES.STAR, 100,100,50,50); // DRAWS A STAR
     },
     
     pauseGame: function(){
         this.paused = true;
-        
+        this.sound.stopBGAudio();
         cancelAnimationFrame(this.animationID);
         
         this.update();
@@ -374,7 +398,7 @@ app.main = {
     
     unpauseGame: function(){  
         cancelAnimationFrame(this.animationID);
-        
+        this.sound.playBGAudio();
         this.paused = false;
         
         this.update();
