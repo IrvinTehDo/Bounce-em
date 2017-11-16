@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+    <link href="https://fonts.googleapis.com/css?family=Audiowide" rel="stylesheet">
+	<style>
+        body{background-color: rgb(254, 93, 232);}
+        h2{font: 48px Audiowide; position: fixed; left: 50%; top: 5%; transform: translate(-50%, 0%);}
+        canvas{border:1px solid gray; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);}
+        #h2p{font: 24px Audiowide; position: fixed; left:50%; top: 80%; transform: translate(-50%, 0%);}
+        #h2p2{font: 24px Audiowide; position: fixed; left:50%; top: 84%; transform: translate(-50%, 0%);}
+        #cntrl{font: 24px Audiowide; position: fixed; left:50%; top: 88%; transform: translate(-50%, 0%);}
+        #cntrl2{font: 24px Audiowide; position: fixed; left:50%; top: 92%; transform: translate(-50%, 0%);}
+        #audioControls{display:none;}
+	</style>
+	<title>Bounce 'Em</title>
+</head>
+<body>
+    <h2>Boucne 'Em</h2>	
+    <canvas>Get a real browser!</canvas>
+    <p id='h2p'>How to Play: Ball will move in the opposite direction of the mouse's click</p>
+    <p id='h2p2'>Get the Red ball into the Blue box to earn a star!</p>
+    <p id='cntrl'>Controls: 'R' to reload current level, 'Q' to return to main menu</p>
+    <p id='cntrl2'>'A' + 'D' + 'F' to remove saved clears</p>
+
+	<script src='js/utilities.js'></script>
+    <script src='js/keys.js'></script>
+    <script src='js/media.js'></script>
+	<script src='js/loader.js'></script>
+	<script src='js/main.js'></script>
+    <script src='js/sound.js'></script>
+    <section id="audioControls"><audio id="bgAudio" src="media/background.mp3" controls loop></audio>></section>
+    
+    
+</body>
+</html>
